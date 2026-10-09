@@ -1,6 +1,8 @@
 import express from 'express';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
@@ -51,7 +53,6 @@ async function callJkApi(method, path, data = null) {
     const response = await jkApi.request(config);
     return { success: true, data: response.data };
   } catch (error) {
-    // API ka error waise hi pass karo
     if (error.response) {
       return {
         success: false,
@@ -120,7 +121,7 @@ server.tool(
     keyword: z.string().optional(),
     content: z.string().optional(),
     internal_link: z.string().optional(),
-    canonical_url: z.string().optional(),      // ✅ NAYA
+    canonical_url: z.string().optional(),
   },
   async ({ id, ...fields }) => {
     logCall('update_category', id, `fields=${Object.keys(fields).join(',')}`);
@@ -186,6 +187,12 @@ server.tool(
     page_title: z.string().optional(),
     page_description: z.string().optional(),
     keyword: z.string().optional(),
+    canonical_url: z.string().optional(),
+    category: z.string().optional(),
+    image: z.string().optional(),
+    image_alt_text: z.string().optional(),
+    h1: z.string().optional(),
+    body_text: z.string().optional(),
   },
   async ({ id, ...fields }) => {
     logCall('update_product', id, `fields=${Object.keys(fields).join(',')}`);
@@ -241,8 +248,8 @@ server.tool(
     page_title: z.string().optional(),
     page_description: z.string().optional(),
     keywords: z.string().optional(),
-    canonical_url: z.string().optional(),    
-    image_alt_text: z.string().optional(), 
+    canonical_url: z.string().optional(),
+    image_alt_text: z.string().optional(),
   },
   async (fields) => {
     logCall('create_blog', 'new', `title=${fields.title}`);
@@ -263,8 +270,8 @@ server.tool(
     page_title: z.string().optional(),
     page_description: z.string().optional(),
     keyword: z.string().optional(),
-    canonical_url: z.string().optional(),      // ✅ NAYA
-    image_alt_text: z.string().optional(),     // ✅ NAYA
+    canonical_url: z.string().optional(),
+    image_alt_text: z.string().optional(),
   },
   async ({ id, ...fields }) => {
     logCall('update_blog', id, `fields=${Object.keys(fields).join(',')}`);
@@ -285,6 +292,13 @@ server.tool(
 // ============================================
 const app = express();
 app.use(express.json());
+
+// ES Modules mein __dirname nikalne ka tareeqa
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Public folder ko serve karo (Google verification file ke liye)
+app.use(express.static(path.join(__dirname, '../public_html')));
 
 app.post('/mcp', async (req, res) => {
   const transport = new StreamableHTTPServerTransport({
