@@ -120,10 +120,10 @@ server.tool(
     keyword: z.string().optional(),
     content: z.string().optional(),
     internal_link: z.string().optional(),
+    canonical_url: z.string().optional(),      // ✅ NAYA
   },
   async ({ id, ...fields }) => {
     logCall('update_category', id, `fields=${Object.keys(fields).join(',')}`);
-    // Khali fields hata do
     const body = Object.fromEntries(
       Object.entries(fields).filter(([_, v]) => v !== undefined && v !== '')
     );
@@ -241,6 +241,8 @@ server.tool(
     page_title: z.string().optional(),
     page_description: z.string().optional(),
     keywords: z.string().optional(),
+    canonical_url: z.string().optional(),    
+    image_alt_text: z.string().optional(), 
   },
   async (fields) => {
     logCall('create_blog', 'new', `title=${fields.title}`);
@@ -261,6 +263,8 @@ server.tool(
     page_title: z.string().optional(),
     page_description: z.string().optional(),
     keyword: z.string().optional(),
+    canonical_url: z.string().optional(),      // ✅ NAYA
+    image_alt_text: z.string().optional(),     // ✅ NAYA
   },
   async ({ id, ...fields }) => {
     logCall('update_blog', id, `fields=${Object.keys(fields).join(',')}`);
